@@ -1,0 +1,91 @@
+/*We read the list of times, sort it by start time, and then walk over the list once, merging overlapping times. Then we walk the list watching for long milking periods and long non-milking periods.
+
+An alternate approach would be to just keep an array of size a million and mark off times. On a nice fast processor, that's probably fast enough, but our above algorithm will work even on slow processors, and it's not much harder to write.
+虽然按begin排完续之后并不能保证end有顺序，但是却会很好的简化逻辑。随不能化至最简，但这方法很值得借鉴
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
+#define MAXMILKING 5000
+
+typedef struct Milking	Milking;
+struct Milking {
+    int begin;
+    int end;
+};
+
+Milking milking[MAXMILKING];
+int nmilking;
+
+int
+milkcmp(const void *va, const void *vb)   //自己写的比较函数很好
+{
+    Milking *a, *b;
+
+    a = (Milking*)va;
+    b = (Milking*)vb;
+
+    if(a->begin > b->begin)
+	return 1;
+    if(a->begin < b->begin)
+	return -1;
+    return 0;
+}
+
+void
+main(void)
+{
+    FILE *fin, *fout;
+    int i, j, t, tmilk, tnomilk;
+    Milking cur;
+
+    fin = fopen("milk2.in", "r");
+    fout = fopen("milk2.out", "w");
+    assert(fin != NULL && fout != NULL);
+
+    /* read input, sort */
+    fscanf(fin, "%d", &nmilking);
+    for(i=0; i<nmilking; i++)
+	fscanf(fin, "%d %d", &milking[i].begin, &milking[i].end);
+
+    qsort(milking, nmilking, sizeof(Milking), milkcmp);   //调用函数
+    /*
+	用 法: void qsort(void *base, int nelem, int width, int (*fcmp)(const void *,const void *));
+　	参数：1 待排序数组首地址 2 数组中待排序元素数量 3 各元素的占用空间大小 4 指向函数的指针，用于确定排序的顺序
+    */
+
+    /* walk over list, looking for long periods of time */
+    /* tmilk = longest milking time */
+    /* tnomilk = longest non-milking time */
+    /* cur = current span of milking time being considered */
+
+    tmilk = 0;
+    tnomilk = 0;
+    cur = milking[0];
+    for(i=1; i<nmilking; i++) {
+	if(milking[i].begin > cur.end) {	/* a down time */
+	    t = milking[i].begin - cur.end;
+	    if(t > tnomilk)
+		tnomilk = t;
+
+	    t = cur.end - cur.begin;
+	    if(t > tmilk)
+		tmilk = t;
+
+	    cur = milking[i];
+	} else {	
+	    if(milking[i].end > cur.end)
+		cur.end = milking[i].end;
+	}
+    }
+
+    /* check final milking period */
+    t = cur.end - cur.begin;
+    if(t > tmilk)
+	tmilk = t;
+
+    fprintf(fout, "%d %d\n", tmilk, tnomilk);
+    exit(0);
+}

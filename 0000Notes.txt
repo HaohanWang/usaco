@@ -1,0 +1,17 @@
+1. The input file has a newline at the end of each line but does not have a "return". Sometimes, programmers code for the Windows paradigm of "return" followed by "newline"; don't do that! Use simple input routines like "readln" (for Pascal) and, for C/C++, "fscanf" and "fid>>string".
+
+2. 读一个行，处理每个字母用char*，就好。不必用string
+
+3. 截断string str，产生char：
+	char* str1=str.substr(p,1);
+        char ch=str1.c_str();
+
+
+4. 把二维数组传入函数的方法：
+	void f(int* p, int row, int col);
+	的形式，里面用 p[i*col+j]来表示p[i][j] 
+
+
+
+
+
